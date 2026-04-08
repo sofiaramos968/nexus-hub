@@ -3,67 +3,322 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buzón de Intercambio</title>
+    <title>Portal de Transferencia Segura</title>
     <style>
+        /* Variables de Tema */
+        :root {
+            --primary-glow: #4a90e2;
+            --bg-color: #0b0c10;
+            --glass-bg: rgba(30, 33, 40, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-muted: #8a8d93;
+            --accent: #00ff88;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
         body {
-            background-color: #121212;
-            color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
+            overflow: hidden;
+            position: relative;
         }
-        .contenedor {
-            background-color: #1e1e1e;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
-            text-align: center;
-            max-width: 500px;
+
+        /* Fondo Animado de Alta Gama */
+        .ambient-bg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100vw;
+            height: 100vh;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle at 50% 50%, rgba(74, 144, 226, 0.15), transparent 60%);
+            z-index: 0;
+            animation: pulseBg 8s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulseBg {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+        }
+
+        /* Contenedor Principal (Glassmorphism) */
+        .system-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 40px;
             width: 100%;
+            max-width: 550px;
+            z-index: 10;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation-delay: 1.5s; /* Espera a que termine el preloader */
         }
-        h2 {
-            color: #4CAF50;
-            margin-bottom: 10px;
+
+        @keyframes slideUp {
+            to { transform: translateY(0); opacity: 1; }
         }
-        p {
-            color: #b3b3b3;
-            font-size: 14px;
+
+        /* Cabecera del Panel */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 20px;
             margin-bottom: 25px;
         }
-        .instrucciones {
-            background-color: #2c2c2c;
+
+        .title-wrapper h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .title-wrapper p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Indicador de Estado */
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--accent);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent);
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Contenedor del Widget de MediaFire */
+        .upload-zone {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .upload-zone:hover {
+            border-color: rgba(74, 144, 226, 0.5);
+            box-shadow: 0 0 15px rgba(74, 144, 226, 0.1);
+        }
+
+        /* Información del Sistema */
+        .system-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.2);
             padding: 15px;
-            border-radius: 8px;
-            font-size: 13px;
-            margin-top: 20px;
-            color: #ccc;
-            text-align: left;
+            border-radius: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 0.9rem;
+            font-family: monospace;
+            color: #fff;
+        }
+
+        /* Pantalla de Carga Inicial (Preloader) */
+        .preloader {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader-text {
+            font-family: monospace;
+            color: var(--accent);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+        }
+
+        .loader-bar {
+            width: 200px;
+            height: 2px;
+            background: #222;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loader-progress {
+            position: absolute;
+            top: 0; left: 0; height: 100%;
+            background: var(--primary-glow);
+            width: 0%;
+            box-shadow: 0 0 10px var(--primary-glow);
+            animation: loading 1.2s ease-in-out forwards;
+        }
+
+        @keyframes loading {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .system-card { padding: 25px; border-radius: 15px; margin: 15px; }
+            .card-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .system-info { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <div class="contenedor">
-        <h2>Subida de Archivos</h2>
-        <p>Sube aquí el video del método o intercambio. No importa el tamaño del archivo.</p>
+    <div class="ambient-bg"></div>
 
-        <script type="text/javascript">var mf_dropbox_width=480;var mf_dropbox_id="0c09c3bf711a5d8adecb6671f53e60cdd352c8701c17dafcd7dce5a05528c2cb";</script>
-        <script type="text/javascript" src="https://www.mediafire.com/dropbox/dropbox.js"></script>
-        
-        <div class="instrucciones">
-            <strong>Nota:</strong>
-            <ul>
-                <li>Puedes subir el archivo desde tu galería si estás en el móvil.</li>
-                <li>Una vez que la barra de carga llegue al 100%, avísame por Telegram.</li>
-            </ul>
+    <div class="preloader" id="preloader">
+        <div class="loader-text" id="loader-text">INICIANDO PROTOCOLO...</div>
+        <div class="loader-bar">
+            <div class="loader-progress"></div>
         </div>
     </div>
+
+    <div class="system-card">
+        <div class="card-header">
+            <div class="title-wrapper">
+                <h1>NEXUS Dropzone</h1>
+                <p>Módulo de Recepción Cifrada</p>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                LÍNEA SEGURA
+            </div>
+        </div>
+
+        <div class="upload-zone">
+            <script type="text/javascript">
+                var mf_dropbox_width = 480; // Se ajustará al contenedor automáticamente en móviles
+                var mf_dropbox_id = "0c09c3bf711a5d8adecb6671f53e60cdd352c8701c17dafcd7dce5a05528c2cb";
+            </script>
+            <script type="text/javascript" src="https://www.mediafire.com/dropbox/dropbox.js"></script>
+        </div>
+
+        <div class="system-info">
+            <div class="info-item">
+                <span class="info-label">Límite de Archivo</span>
+                <span class="info-value">ILIMITADO (Bypass Activo)</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">ID de Sesión Local</span>
+                <span class="info-value" id="session-id">Generando...</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Ruta de Destino</span>
+                <span class="info-value">Servidor Privado [NODO-1]</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Tiempo de Sistema</span>
+                <span class="info-value" id="sys-time">00:00:00</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animación de secuencia de arranque
+        document.addEventListener('DOMContentLoaded', () => {
+            const preloader = document.getElementById('preloader');
+            const loaderText = document.getElementById('loader-text');
+            
+            const logs = [
+                "INICIANDO PROTOCOLO...",
+                "ENCRIPTANDO CONEXIÓN...",
+                "ESTABLECIENDO TÚNEL...",
+                "SISTEMA EN LÍNEA"
+            ];
+
+            let step = 0;
+            const logInterval = setInterval(() => {
+                step++;
+                if(step < logs.length) {
+                    loaderText.innerText = logs[step];
+                }
+            }, 400);
+
+            // Ocultar preloader después de 1.5s
+            setTimeout(() => {
+                clearInterval(logInterval);
+                preloader.style.opacity = '0';
+                setTimeout(() => {
+                    preloader.style.display = 'none';
+                }, 500);
+            }, 1500);
+
+            // Generador de ID de sesión visual falso para darle aspecto técnico
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let mockId = 'RX-';
+            for (let i = 0; i < 6; i++) mockId += chars.charAt(Math.floor(Math.random() * chars.length));
+            document.getElementById('session-id').innerText = mockId;
+
+            // Reloj del sistema en tiempo real
+            setInterval(() => {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('es-ES', { hour12: false });
+                document.getElementById('sys-time').innerText = timeStr + ' GMT-6';
+            }, 1000);
+        });
+    </script>
 
 </body>
 </html>

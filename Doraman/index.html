@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Recopilaciones</title>
+    <style>
+        :root {
+            --primary: #4285F4;
+            --success: #0f9d58;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #777777;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            color: var(--primary);
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #eee;
+            margin: 25px 0;
+        }
+
+        .links-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: opacity 0.3s, transform 0.1s;
+            margin-top: 15px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary);
+            border: 2px dashed var(--primary);
+            margin-top: 10px;
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(66, 133, 244, 0.05);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            margin-top: 25px;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+            margin-top: 10px;
+        }
+
+        .btn-success:hover {
+            opacity: 0.9;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            resize: vertical;
+            line-height: 1.5;
+            background-color: #f9f9f9;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🔗 Link Builder Pro</h2>
+
+    <div class="form-group">
+        <label>Tu Marca Personal:</label>
+        <input type="text" id="marca" placeholder="Ej. Yumi Art" value="Yumi Art">
+    </div>
+    
+    <div class="form-group">
+        <label>Título de la Serie (Opcional):</label>
+        <input type="text" id="titulo" placeholder="Si lo dejas vacío, no aparecerá en el texto">
+    </div>
+
+    <div class="divider"></div>
+
+    <label>Enlaces de los Capítulos:</label>
+    <div class="links-container" id="listaEnlaces">
+        <div class="form-group">
+            <input type="text" class="link-input" placeholder="URL de la Parte 1">
+        </div>
+        <div class="form-group">
+            <input type="text" class="link-input" placeholder="URL de la Parte 2">
+        </div>
+    </div>
+
+    <button class="btn btn-outline" id="btnAñadir">+ Añadir siguiente parte</button>
+
+    <button class="btn btn-primary" id="btnGenerar">Generar Mensaje</button>
+
+    <div id="zonaResultado" class="hidden">
+        <textarea id="textoResultado" readonly></textarea>
+        <button class="btn btn-success" id="btnCopiar">📋 Copiar al Portapapeles</button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const btnAñadir = document.getElementById("btnAñadir");
+        const listaEnlaces = document.getElementById("listaEnlaces");
+        const btnGenerar = document.getElementById("btnGenerar");
+        const marcaInput = document.getElementById("marca");
+        const tituloInput = document.getElementById("titulo");
+        const zonaResultado = document.getElementById("zonaResultado");
+        const textoResultado = document.getElementById("textoResultado");
+        const btnCopiar = document.getElementById("btnCopiar");
+
+        let contadorPartes = 2;
+
+        // Función para añadir nuevos campos de texto
+        btnAñadir.addEventListener("click", () => {
+            contadorPartes++;
+            const nuevoDiv = document.createElement("div");
+            nuevoDiv.className = "form-group";
+            
+            const nuevoInput = document.createElement("input");
+            nuevoInput.type = "text";
+            nuevoInput.className = "link-input";
+            nuevoInput.placeholder = `URL de la Parte ${contadorPartes}`;
+            
+            nuevoDiv.appendChild(nuevoInput);
+            listaEnlaces.appendChild(nuevoDiv);
+            
+            // Hacer scroll suave hacia abajo para ver el nuevo input
+            nuevoInput.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        });
+
+        // Función para generar el texto final
+        btnGenerar.addEventListener("click", () => {
+            const marca = marcaInput.value.trim();
+            const titulo = tituloInput.value.trim();
+            const inputs = document.querySelectorAll(".link-input");
+            
+            let textoFinal = "";
+
+            // 1. Añadir la marca personal sola
+            if (marca) {
+                textoFinal += `📌 ${marca}\n`;
+            }
+
+            // 2. Añadir título si existe
+            if (titulo) {
+                textoFinal += `🎬 ${titulo}\n`;
+            }
+
+            // 3. Añadir el mensaje de contexto intermedio
+            textoFinal += `\nAquí están todas las partes de la historia ordenadas para que puedan verla completa y sin interrupciones. 👇🍿\n\n`;
+
+            // 4. Recorrer los enlaces e ignorar los vacíos
+            let partesValidas = 0;
+            inputs.forEach((input) => {
+                const url = input.value.trim();
+                if (url !== "") {
+                    partesValidas++;
+                    textoFinal += `▶️ Parte ${partesValidas}: ${url}\n`;
+                }
+            });
+
+            // Validar que haya al menos un enlace
+            if (partesValidas === 0) {
+                alert("Por favor, ingresa al menos un enlace para generar el mensaje.");
+                return;
+            }
+
+            // Mostrar el resultado
+            textoResultado.value = textoFinal;
+            zonaResultado.classList.remove("hidden");
+            
+            // Cambiar el texto del botón de copiar a su estado original
+            btnCopiar.textContent = "📋 Copiar al Portapapeles";
+            btnCopiar.style.backgroundColor = "var(--success)";
+            
+            zonaResultado.scrollIntoView({ behavior: "smooth" });
+        });
+
+        // Función para copiar al portapapeles
+        btnCopiar.addEventListener("click", () => {
+            textoResultado.select();
+            textoResultado.setSelectionRange(0, 99999); // Para dispositivos móviles
+            
+            navigator.clipboard.writeText(textoResultado.value).then(() => {
+                btnCopiar.textContent = "✅ ¡Copiado!";
+                btnCopiar.style.backgroundColor = "#0b8043"; // Verde más oscuro
+                
+                setTimeout(() => {
+                    btnCopiar.textContent = "📋 Copiar al Portapapeles";
+                    btnCopiar.style.backgroundColor = "var(--success)";
+                }, 2000);
+            }).catch(err => {
+                alert("Error al copiar el texto: " + err);
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
